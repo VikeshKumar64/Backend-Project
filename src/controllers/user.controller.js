@@ -20,7 +20,7 @@ const resgisterUser = asyncHandler( async (req, res) =>{
         throw new ApiError(400, " check that all the fileds are filled");
     }
     
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{userName},{email}]
     })
 
@@ -28,9 +28,16 @@ const resgisterUser = asyncHandler( async (req, res) =>{
         throw new ApiError(409,"User with username or email exists");
     }
 
+    // console.log(req.files);
 
     const avtarLocalPath = req.files?.avtar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+    let coverImageLocalPath;
+
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path;
+    }
 
     if(!avtarLocalPath){
         throw new ApiError(400, "Avtar file is required");
@@ -46,7 +53,7 @@ const resgisterUser = asyncHandler( async (req, res) =>{
         throw new ApiError(400, "Avtar file is required");
     }
 
-    const user = User.create({
+    const user = await User.create({
         fullName,
         avtar: avtar.url,
         coverImage: coverImage.url || "",
@@ -64,7 +71,7 @@ const resgisterUser = asyncHandler( async (req, res) =>{
     }
 
     return res.status(201).json(
-        new ApiResponse(200,createdUser, "User registered sucessfully")
+        new ApiResponse(200, "User registered sucessfully")
     )
 })
 export {resgisterUser}
